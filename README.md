@@ -1,20 +1,34 @@
 # Coworking Space Scheduler
 
-A web application to manage desk bookings and meetings for a coworking space with 5 shared desks.
+A comprehensive web application to manage desk bookings, meetings, and user presence for coworking spaces.
 
 ## Features
 
-- **Desk Booking System**: View and book 5 desks across a weekly calendar
-- **User Management**: Create and select users to track individual bookings
-- **Meeting Board**: Announce and manage meetings and calls
-- **Visual Calendar**: Color-coded view showing available desks, your bookings, and others' bookings
-- **Real-time Updates**: Immediate reflection of booking changes
+### Core Features
+- **JWT Authentication**: Secure login/register system with role-based access control
+- **Desk Booking System**: Visual weekly calendar for managing desk reservations
+- **Meeting Display**: Meetings shown directly on the calendar grid
+- **Week Templates**: Save recurring booking patterns and apply them quickly
+- **Admin Panel**: Comprehensive management interface for administrators
+
+### User Features
+- **Personal Account**: Secure authentication with password
+- **Quick Booking**: Click-to-book interface with visual feedback
+- **Week Templates**: Create patterns like "Mon/Wed/Fri at Desk 3" and apply to multiple weeks
+- **Meeting Visibility**: See all scheduled meetings alongside desk bookings
+
+### Admin Features
+- **User Management**: Create, edit, delete users, and assign roles
+- **Desk Management**: Add, rename, activate/deactivate desks
+- **Full Control**: Access to all system configuration
 
 ## Tech Stack
 
-- **Frontend**: React with Vite
+- **Frontend**: React 18 + Vite
 - **Backend**: Node.js + Express
-- **Database**: SQLite
+- **Database**: SQLite with automatic migrations
+- **Authentication**: JWT + bcrypt
+- **Testing**: Jest (backend) + Vitest (frontend)
 - **Styling**: Custom CSS
 
 ## Project Structure
@@ -22,23 +36,31 @@ A web application to manage desk bookings and meetings for a coworking space wit
 ```
 coworking-space-scheduler/
 ├── backend/
-│   ├── server.js          # Express API server
-│   ├── database.js        # SQLite database setup
+│   ├── server.js              # Express API server
+│   ├── database.js            # SQLite database + migrations
+│   ├── middleware/
+│   │   └── auth.js            # JWT authentication middleware
+│   ├── __tests__/             # Jest test suite
+│   ├── .env.example           # Environment variables template
 │   └── package.json
 ├── frontend/
 │   ├── src/
+│   │   ├── auth/
+│   │   │   └── AuthContext.jsx       # React auth context
 │   │   ├── components/
-│   │   │   ├── DeskScheduler.jsx    # Main calendar view
-│   │   │   ├── MeetingBoard.jsx     # Meetings sidebar
-│   │   │   └── UserManager.jsx      # User selection
+│   │   │   ├── admin/
+│   │   │   │   ├── AdminPanel.jsx    # Admin dashboard
+│   │   │   │   ├── UserManagement.jsx
+│   │   │   │   └── DeskManagement.jsx
+│   │   │   ├── DeskScheduler.jsx     # Main calendar
+│   │   │   ├── MeetingBoard.jsx      # Meeting sidebar
+│   │   │   ├── WeekTemplates.jsx     # Template manager
+│   │   │   └── LoginPage.jsx         # Auth page
 │   │   ├── App.jsx
-│   │   ├── api.js         # API client functions
-│   │   ├── utils.js       # Date utilities
-│   │   └── index.css
-│   ├── index.html
-│   ├── vite.config.js
+│   │   ├── api.js             # API client
+│   │   └── utils.js
 │   └── package.json
-└── package.json           # Root package with scripts
+└── package.json               # Root scripts
 ```
 
 ## Installation
@@ -54,112 +76,132 @@ coworking-space-scheduler/
    npm run install-all
    ```
 
-   This will install dependencies for both backend and frontend.
+3. **Configure environment** (optional)
+   ```bash
+   cd backend
+   cp .env.example .env
+   # Edit .env to customize admin credentials
+   ```
 
 ## Running the Application
 
 ### Development Mode
 
-Run both frontend and backend simultaneously:
-
 ```bash
 npm run dev
 ```
 
-This will start:
-- Backend API server on `http://localhost:3001`
-- Frontend development server on `http://localhost:3000`
+This starts:
+- Backend API: `http://localhost:3001`
+- Frontend: `http://localhost:3000`
 
-### Production Mode
+### Testing
 
-1. Build the frontend:
-   ```bash
-   npm run build
-   ```
+**Backend tests with coverage:**
+```bash
+cd backend
+npm test
+```
 
-2. Start the backend server:
-   ```bash
-   npm start
-   ```
+**Frontend tests:**
+```bash
+cd frontend
+npm test
+```
 
-3. Serve the built frontend files from `frontend/dist/`
+## Default Admin Account
+
+On first run, an admin account is automatically created:
+
+- **Email**: `admin@coworking.local`
+- **Password**: `admin123`
+
+⚠️ **IMPORTANT**: Change these credentials in production via the `.env` file!
 
 ## Usage Guide
 
 ### Getting Started
 
-1. **Create a User**
-   - Click "New User" button
-   - Enter your name and email
-   - Click "Create User"
+1. **Login or Register**
+   - Navigate to `http://localhost:3000`
+   - Login with admin credentials or create a new account
+   - New accounts have 'user' role by default
 
-2. **Select Your Name**
-   - Use the dropdown to select your name from the list
+2. **Book a Desk**
+   - Click "Calendar" in the navigation
+   - Click any empty cell to book that desk for that day
+   - Click your booking to cancel it
+   - Your bookings are shown in green, others in blue
 
-### Booking a Desk
+3. **Create a Week Template**
+   - Click "My Templates"
+   - Create a template with your regular office days
+   - Example: "Mon/Wed/Fri at Desk 3"
+   - Apply the template to any date range
 
-1. Navigate through weeks using the arrow buttons
-2. Click on an empty cell to book a desk for that day
-3. Your bookings appear in green
-4. Other users' bookings appear in blue
-5. Click your own booking to cancel it
+4. **Add Meetings**
+   - Use the "Meetings & Calls" sidebar
+   - Meetings appear in purple on the calendar
+   - Everyone can see all meetings
 
-### Managing Meetings
+### Admin Features
 
-1. Click "+ Add Meeting" in the Meetings & Calls section
-2. Fill in the meeting details:
-   - Title (required)
-   - Description (optional)
-   - Date (required)
-   - Time (required)
-3. Click "Create Meeting"
-4. Meetings you created can be deleted by clicking the "Delete" button
+1. **Access Admin Panel**
+   - Login with admin account
+   - Click "Admin" in navigation
+
+2. **Manage Users**
+   - Create new users with passwords
+   - Edit user details and roles
+   - Delete users (except yourself)
+
+3. **Manage Desks**
+   - Add new desks to the system
+   - Rename existing desks
+   - Deactivate desks (hides from calendar, preserves data)
 
 ## API Documentation
 
+### Authentication
+
+- `POST /api/auth/register` - Register new user
+- `POST /api/auth/login` - Login user
+- `GET /api/auth/me` - Get current user info
+
 ### Users
 
-- `GET /api/users` - Get all users
-- `POST /api/users` - Create a new user
-  ```json
-  {
-    "name": "John Doe",
-    "email": "john@example.com"
-  }
-  ```
-- `GET /api/users/:id` - Get user by ID
+- `GET /api/users` - List all users
+- `GET /api/users/:id` - Get user details
+- `PUT /api/users/:id` - Update user (admin only)
+- `DELETE /api/users/:id` - Delete user (admin only)
+- `POST /api/users/:id/change-password` - Change password
 
 ### Desks
 
-- `GET /api/desks` - Get all 5 desks
+- `GET /api/desks` - List active desks
+- `GET /api/admin/desks` - List all desks (admin only)
+- `POST /api/admin/desks` - Create desk (admin only)
+- `PUT /api/admin/desks/:id` - Update desk (admin only)
+- `DELETE /api/admin/desks/:id` - Deactivate desk (admin only)
 
 ### Bookings
 
-- `GET /api/bookings?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD` - Get bookings in date range
-- `POST /api/bookings` - Create a booking
-  ```json
-  {
-    "user_id": "uuid",
-    "desk_id": 1,
-    "date": "2024-01-15"
-  }
-  ```
-- `DELETE /api/bookings/:id` - Delete a booking
+- `GET /api/bookings?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD` - Get bookings
+- `POST /api/bookings` - Create booking
+- `DELETE /api/bookings/:id` - Delete booking
 
 ### Meetings
 
-- `GET /api/meetings?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD` - Get meetings in date range
-- `POST /api/meetings` - Create a meeting
-  ```json
-  {
-    "title": "Team Standup",
-    "description": "Daily sync",
-    "date": "2024-01-15",
-    "time": "10:00",
-    "created_by": "uuid"
-  }
-  ```
-- `DELETE /api/meetings/:id` - Delete a meeting
+- `GET /api/meetings?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD` - Get meetings
+- `POST /api/meetings` - Create meeting
+- `DELETE /api/meetings/:id` - Delete meeting
+
+### Week Templates
+
+- `GET /api/templates` - Get user's templates (auth required)
+- `POST /api/templates` - Create template (auth required)
+- `POST /api/templates/:id/apply` - Apply template to date range
+- `DELETE /api/templates/:id` - Delete template
 
 ## Database Schema
 
@@ -167,11 +209,15 @@ This will start:
 - `id` (TEXT, PRIMARY KEY)
 - `name` (TEXT, NOT NULL)
 - `email` (TEXT, UNIQUE, NOT NULL)
+- `password_hash` (TEXT)
+- `role` (TEXT, DEFAULT 'user') - 'user' or 'admin'
 - `created_at` (DATETIME)
 
 ### desks
-- `id` (INTEGER, PRIMARY KEY)
+- `id` (INTEGER, PRIMARY KEY, AUTOINCREMENT)
 - `name` (TEXT, NOT NULL)
+- `active` (INTEGER, DEFAULT 1) - 1 = active, 0 = inactive
+- `created_at` (DATETIME)
 
 ### bookings
 - `id` (TEXT, PRIMARY KEY)
@@ -190,29 +236,119 @@ This will start:
 - `created_by` (TEXT, FOREIGN KEY)
 - `created_at` (DATETIME)
 
-## Color Legend
+### week_templates
+- `id` (TEXT, PRIMARY KEY)
+- `user_id` (TEXT, FOREIGN KEY)
+- `name` (TEXT, NOT NULL)
+- `created_at` (DATETIME)
+
+### template_days
+- `id` (TEXT, PRIMARY KEY)
+- `template_id` (TEXT, FOREIGN KEY)
+- `day_of_week` (INTEGER, NOT NULL) - 0=Sunday, 1=Monday, etc.
+- `desk_id` (INTEGER, FOREIGN KEY) - NULL for "any desk"
+- `created_at` (DATETIME)
+
+## Security Features
+
+- **Password Hashing**: bcrypt with salt rounds
+- **JWT Tokens**: Secure session management with expiration
+- **Role-Based Access**: Admin-only routes protected by middleware
+- **Environment Variables**: Secrets stored in `.env` file (not committed)
+- **Input Validation**: All API endpoints validate input data
+- **SQL Injection Protection**: Parameterized queries throughout
+
+## Environment Variables
+
+Create a `.env` file in the `backend/` directory:
+
+```env
+# Server
+PORT=3001
+NODE_ENV=development
+
+# JWT
+JWT_SECRET=your-secret-key-here
+JWT_EXPIRATION=7d
+
+# Admin Account (created on first run)
+ADMIN_EMAIL=admin@coworking.local
+ADMIN_PASSWORD=admin123
+ADMIN_NAME=Administrator
+```
+
+## Testing
+
+The project includes comprehensive test coverage:
+
+- **Backend**: Jest + Supertest for API testing
+- **Frontend**: Vitest + React Testing Library
+- **Coverage Reports**: HTML reports generated in `coverage/` directory
+
+Run tests:
+```bash
+# Backend with coverage
+cd backend && npm test
+
+# Frontend with coverage
+cd frontend && npm run test:coverage
+```
+
+## Calendar Color Legend
 
 - **White**: Available desk
 - **Blue**: Booked by another user
 - **Green**: Your booking
+- **Purple**: Meeting scheduled
 
-## Browser Support
+## Development
 
-Modern browsers with ES6+ support:
-- Chrome/Edge (latest)
-- Firefox (latest)
-- Safari (latest)
+### Adding New Features
+
+1. Backend routes: Add to `backend/server.js`
+2. Frontend API calls: Update `frontend/src/api.js`
+3. Components: Add to `frontend/src/components/`
+4. Tests: Add to `__tests__/` directories
+
+### Database Migrations
+
+The database automatically migrates on startup. New columns are added safely without data loss.
+
+## Production Deployment
+
+1. **Set strong credentials** in `.env`
+2. **Use HTTPS** in production
+3. **Set `NODE_ENV=production`**
+4. **Use a reverse proxy** (nginx/Apache)
+5. **Regular backups** of `coworking.db`
+6. **Change JWT_SECRET** to a random string
+
+## Troubleshooting
+
+**Can't login:**
+- Delete `backend/coworking.db` to recreate with default admin
+- Check `.env` file exists with correct credentials
+
+**Port already in use:**
+- Change `PORT` in `backend/.env`
+- Update `vite.config.js` proxy target
+
+**Tests failing:**
+- Ensure dependencies are installed
+- Delete `node_modules` and reinstall
 
 ## License
 
 MIT License - see LICENSE file for details
 
-## Future Enhancements
+## Contributing
 
-- Email notifications for bookings and meetings
-- Recurring bookings
-- Calendar export (iCal)
-- User authentication with passwords
-- Admin dashboard
-- Desk availability statistics
-- Mobile app
+1. Fork the repository
+2. Create a feature branch
+3. Add tests for new features
+4. Ensure all tests pass
+5. Submit a pull request
+
+## Support
+
+For issues or questions, please open an issue on GitHub.

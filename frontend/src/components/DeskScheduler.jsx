@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { getDesks, getBookings, createBooking, deleteBooking } from '../api';
+import { getDesks, getBookings, createBooking, deleteBooking, getMeetings } from '../api';
 import { formatDate, formatDisplayDate, getWeekDates, getMonday } from '../utils';
 
 function DeskScheduler({ currentUser, refreshTrigger, onDataChange }) {
   const [desks, setDesks] = useState([]);
   const [bookings, setBookings] = useState([]);
+  const [meetings, setMeetings] = useState([]);
   const [weekStart, setWeekStart] = useState(getMonday(new Date()));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -15,6 +16,7 @@ function DeskScheduler({ currentUser, refreshTrigger, onDataChange }) {
 
   useEffect(() => {
     loadBookings();
+    loadMeetings();
   }, [weekStart, refreshTrigger]);
 
   const loadDesks = async () => {
@@ -41,9 +43,22 @@ function DeskScheduler({ currentUser, refreshTrigger, onDataChange }) {
     }
   };
 
+  const loadMeetings = async () => {
+    try {
+      const weekDates = getWeekDates(weekStart);
+      const startDate = formatDate(weekDates[0]);
+      const endDate = formatDate(weekDates[6]);
+
+      const data = await getMeetings(startDate, endDate);
+      setMeetings(data);
+    } catch (err) {
+      console.error('Failed to load meetings:', err);
+    }
+  };
+
   const handleCellClick = async (deskId, date) => {
     if (!currentUser) {
-      alert('Please select your name first');
+      alert('Please login first');
       return;
     }
 
@@ -107,6 +122,11 @@ function DeskScheduler({ currentUser, refreshTrigger, onDataChange }) {
     return bookings.find(b => b.desk_id === deskId && b.date === dateStr);
   };
 
+  const getMeetingsForDate = (date) => {
+    const dateStr = formatDate(date);
+    return meetings.filter(m => m.date === dateStr);
+  };
+
   const getCellClassName = (deskId, date) => {
     const booking = getBookingForCell(deskId, date);
     if (!booking) return 'calendar-cell';
@@ -116,7 +136,7 @@ function DeskScheduler({ currentUser, refreshTrigger, onDataChange }) {
 
   return (
     <div className="desk-scheduler">
-      <h2>Desk Bookings</h2>
+      <h2>Desk Bookings & Meetings</h2>
 
       {error && <div className="alert alert-error">{error}</div>}
 
@@ -137,6 +157,48 @@ function DeskScheduler({ currentUser, refreshTrigger, onDataChange }) {
           </div>
         ))}
 
+        {/* Meetings row */}
+        <div className="desk-label-cell" style={{ backgroundColor: '#9b59b6', color: 'white' }}>
+          Meetings
+        </div>
+        {weekDates.map(date => {
+          const dayMeetings = getMeetingsForDate(date);
+          return (
+            <div
+              key={`meetings-${date.toISOString()}`}
+              className="calendar-cell"
+              style={{
+                backgroundColor: dayMeetings.length > 0 ? '#f3e5f5' : 'white',
+                cursor: 'default',
+                minHeight: '80px',
+                padding: '4px'
+              }}
+            >
+              {dayMeetings.map(meeting => (
+                <div
+                  key={meeting.id}
+                  style={{
+                    fontSize: '11px',
+                    padding: '4px',
+                    marginBottom: '3px',
+                    backgroundColor: '#9b59b6',
+                    color: 'white',
+                    borderRadius: '3px',
+                    lineHeight: '1.3'
+                  }}
+                  title={`${meeting.title}\n${meeting.time}\n${meeting.description || ''}`}
+                >
+                  <div style={{ fontWeight: '600' }}>{meeting.time}</div>
+                  <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {meeting.title}
+                  </div>
+                </div>
+              ))}
+            </div>
+          );
+        })}
+
+        {/* Desk rows */}
         {desks.map(desk => (
           <>
             <div key={`label-${desk.id}`} className="desk-label-cell">

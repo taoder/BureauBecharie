@@ -1,13 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { AuthProvider, useAuth } from './auth/AuthContext';
 import LoginPage from './components/LoginPage';
 import DeskScheduler from './components/DeskScheduler';
 import MeetingBoard from './components/MeetingBoard';
+import WeekTemplates from './components/WeekTemplates';
+import AdminPanel from './components/admin/AdminPanel';
 
 function AppContent() {
   const { user, logout, loading, isAdmin } = useAuth();
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const [showAdmin, setShowAdmin] = useState(false);
+  const [currentView, setCurrentView] = useState('calendar'); // 'calendar', 'templates', 'admin'
 
   const handleDataChange = () => {
     setRefreshTrigger(prev => prev + 1);
@@ -32,13 +34,25 @@ function AppContent() {
           <h1>Coworking Space Scheduler</h1>
           <p>Welcome, {user.name}! {user.role === 'admin' && '(Administrator)'}</p>
         </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <button
+            className={currentView === 'calendar' ? 'btn-primary' : 'btn-secondary'}
+            onClick={() => setCurrentView('calendar')}
+          >
+            Calendar
+          </button>
+          <button
+            className={currentView === 'templates' ? 'btn-primary' : 'btn-secondary'}
+            onClick={() => setCurrentView('templates')}
+          >
+            My Templates
+          </button>
           {isAdmin() && (
             <button
-              className="btn-secondary"
-              onClick={() => setShowAdmin(!showAdmin)}
+              className={currentView === 'admin' ? 'btn-primary' : 'btn-secondary'}
+              onClick={() => setCurrentView('admin')}
             >
-              {showAdmin ? 'Back to Calendar' : 'Admin Panel'}
+              Admin
             </button>
           )}
           <button
@@ -50,12 +64,10 @@ function AppContent() {
         </div>
       </header>
 
-      {showAdmin && isAdmin() ? (
-        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', marginTop: '20px' }}>
-          <h2>Admin Panel</h2>
-          <p>Admin features will be available here (user management, desk management, etc.)</p>
-          <p style={{ color: '#7f8c8d', fontSize: '14px' }}>Coming soon in the next update...</p>
-        </div>
+      {currentView === 'admin' && isAdmin() ? (
+        <AdminPanel />
+      ) : currentView === 'templates' ? (
+        <WeekTemplates onDataChange={handleDataChange} />
       ) : (
         <>
           <div className="main-content">
@@ -83,6 +95,10 @@ function AppContent() {
             <div className="legend-item">
               <div className="legend-color my-booking"></div>
               <span>Your bookings</span>
+            </div>
+            <div className="legend-item">
+              <div style={{ width: '20px', height: '20px', borderRadius: '4px', backgroundColor: '#9b59b6' }}></div>
+              <span>Meetings</span>
             </div>
           </div>
         </>
