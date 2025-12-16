@@ -680,6 +680,20 @@ app.delete('/api/templates/:id', authenticateToken, async (req, res) => {
   }
 });
 
+// ============= SERVE FRONTEND IN PRODUCTION =============
+
+if (process.env.NODE_ENV === 'production') {
+  const path = require('path');
+
+  // Serve static files from frontend build
+  app.use(express.static(path.join(__dirname, '../frontend/dist')));
+
+  // Handle React routing - return index.html for all non-API routes
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+  });
+}
+
 // ============= SERVER =============
 
 app.listen(PORT, () => {

@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: coworking-scheduler
+    env: node
+    buildCommand: bash build.sh
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRATION
+        value: 7d
+      - key: ADMIN_EMAIL
+        value: admin@coworking.local
+      - key: ADMIN_PASSWORD
+        value: admin123
+      - key: ADMIN_NAME
+        value: Administrator
