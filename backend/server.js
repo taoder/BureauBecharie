@@ -355,6 +355,15 @@ app.post('/api/bookings', async (req, res) => {
   }
 
   try {
+    // Check if user is admin (admins cannot book desks)
+    const user = await dbGet('SELECT role FROM users WHERE id = ?', [user_id]);
+    if (!user) {
+      return res.status(400).json({ error: 'User not found' });
+    }
+    if (user.role === 'admin') {
+      return res.status(403).json({ error: 'Administrators cannot book desks. Please create a regular user account.' });
+    }
+
     // Check if desk exists and is active
     const desk = await dbGet('SELECT * FROM desks WHERE id = ? AND active = 1', [desk_id]);
     if (!desk) {
@@ -444,6 +453,15 @@ app.post('/api/meetings', async (req, res) => {
   }
 
   try {
+    // Check if user is admin (admins cannot create meetings as regular users)
+    const user = await dbGet('SELECT role FROM users WHERE id = ?', [created_by]);
+    if (!user) {
+      return res.status(400).json({ error: 'User not found' });
+    }
+    if (user.role === 'admin') {
+      return res.status(403).json({ error: 'Administrators cannot create meetings as users. Please create a regular user account.' });
+    }
+
     const id = uuidv4();
     await dbRun(
       'INSERT INTO meetings (id, title, description, date, time, created_by) VALUES (?, ?, ?, ?, ?, ?)',
@@ -512,6 +530,11 @@ app.post('/api/templates', authenticateToken, async (req, res) => {
 
   if (!name || !days || !Array.isArray(days)) {
     return res.status(400).json({ error: 'name and days array are required' });
+  }
+
+  // Check if user is admin (admins cannot create templates)
+  if (req.user.role === 'admin') {
+    return res.status(403).json({ error: 'Administrators cannot create templates. Please create a regular user account.' });
   }
 
   try {

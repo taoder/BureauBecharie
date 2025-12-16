@@ -15,6 +15,12 @@ function AppContent() {
     setRefreshTrigger(prev => prev + 1);
   };
 
+  const handleLogout = () => {
+    if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+      logout();
+    }
+  };
+
   if (loading) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
@@ -29,43 +35,71 @@ function AppContent() {
 
   return (
     <div className="container">
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
         <div>
           <h1>Coworking Space Scheduler</h1>
           <p>Welcome, {user.name}! {user.role === 'admin' && '(Administrator)'}</p>
         </div>
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-          <button
-            className={currentView === 'calendar' ? 'btn-primary' : 'btn-secondary'}
-            onClick={() => setCurrentView('calendar')}
-          >
-            Calendar
-          </button>
-          <button
-            className={currentView === 'templates' ? 'btn-primary' : 'btn-secondary'}
-            onClick={() => setCurrentView('templates')}
-          >
-            My Templates
-          </button>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+          {!isAdmin() && (
+            <>
+              <button
+                className={currentView === 'calendar' ? 'btn-primary' : 'btn-secondary'}
+                onClick={() => setCurrentView('calendar')}
+              >
+                Calendar
+              </button>
+              <button
+                className={currentView === 'templates' ? 'btn-primary' : 'btn-secondary'}
+                onClick={() => setCurrentView('templates')}
+              >
+                My Templates
+              </button>
+            </>
+          )}
           {isAdmin() && (
             <button
               className={currentView === 'admin' ? 'btn-primary' : 'btn-secondary'}
               onClick={() => setCurrentView('admin')}
+              style={{ minWidth: '120px' }}
             >
-              Admin
+              Admin Panel
             </button>
           )}
           <button
-            className="btn-secondary"
-            onClick={logout}
+            className="btn-danger"
+            onClick={handleLogout}
+            style={{
+              minWidth: '100px',
+              fontWeight: '600'
+            }}
           >
-            Logout
+            🚪 Déconnexion
           </button>
         </div>
       </header>
 
       {currentView === 'admin' && isAdmin() ? (
         <AdminPanel />
+      ) : isAdmin() ? (
+        <div style={{
+          backgroundColor: 'white',
+          padding: '40px',
+          borderRadius: '8px',
+          marginTop: '20px',
+          textAlign: 'center'
+        }}>
+          <h2>Compte Administrateur</h2>
+          <p style={{ color: '#7f8c8d', marginTop: '10px', fontSize: '16px' }}>
+            En tant qu'administrateur, vous pouvez gérer les utilisateurs, les bureaux et les paramètres du système.
+          </p>
+          <p style={{ color: '#e74c3c', marginTop: '15px', fontSize: '15px', fontWeight: '600' }}>
+            ⚠️ Les administrateurs ne peuvent pas réserver de bureaux ni créer de templates.
+          </p>
+          <p style={{ color: '#7f8c8d', marginTop: '10px' }}>
+            Pour réserver des bureaux, veuillez créer un compte utilisateur standard.
+          </p>
+        </div>
       ) : currentView === 'templates' ? (
         <WeekTemplates onDataChange={handleDataChange} />
       ) : (
